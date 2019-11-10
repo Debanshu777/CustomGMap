@@ -2,21 +2,20 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity" >
-
+    android:orientation="vertical"
+    tools:context=".MapsActivity">
 
     <fragment
         android:id="@+id/map"
-        android:orientation="vertical"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        map:cameraTilt="30"
+        android:orientation="vertical"
         map:cameraBearing="112.5"
+        map:cameraTilt="30"
         map:cameraZoom="13"
         map:mapType="normal"
         map:uiCompass="false"
@@ -24,17 +23,44 @@
         map:uiScrollGestures="false"
         map:uiTiltGestures="true"
         map:uiZoomControls="false"
-        map:uiZoomGestures="true"/>
+        map:uiZoomGestures="true" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="20dp"
+        map:cardBackgroundColor="#fff"
+        map:cardElevation="10dp">
+
+        <EditText
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dp" />
+
+        <ImageButton
+            android:id="@+id/search_button"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:background="#fff"
+            android:padding="3dp"
+            android:src="@drawable/search" />
+
+    </androidx.cardview.widget.CardView>
+
     <Switch
         android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:switchMinWidth="56dp"
         android:layout_gravity="end|bottom"
         android:layout_marginRight="5dp"
         android:layout_marginBottom="5dp"
-        android:text="Dark Mode:"
         android:checked="true"
+        android:switchMinWidth="56dp"
+        android:text="Dark Mode:"
         android:textOff="OFF"
         android:textOn="ON" />
 </FrameLayout>
