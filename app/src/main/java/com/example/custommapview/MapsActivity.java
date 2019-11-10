@@ -1,12 +1,17 @@
 package com.example.custommapview;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Geocoder;
-import android.location.LocationListener;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +20,11 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,10 +39,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Locale;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks
+    ,GoogleApiClient.OnConnectionFailedListener,LocationListener
+    {
 
     private GoogleMap mMap;
-    Geocoder geocoder;
+    private  GoogleApiClient client;
+    private LocationRequest locationRequest;
+    private Location lastLoaction;
+    private Marker currentLocationMarker;
     Switch dark;
 
     @Override
@@ -50,8 +65,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(final GoogleMap googleMap) {
 
         mMap = googleMap;
-        geocoder = new Geocoder(this, Locale.getDefault());
-        final Marker[] marker = new Marker[1];
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION )!= PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            buildGoogleApiClient();
+            mMap.setMyLocationEnabled(true);
+        }
 
         dark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -85,17 +102,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
-            @Override
-            public void onMapClick(LatLng arg0) {
-                // TODO Auto-generated method stub
-                Log.d("arg0", arg0.latitude + "-" + arg0.longitude);
-                marker[0].remove();
-                LatLng newLoc = new LatLng(arg0.latitude, arg0.longitude);
-                marker[0] =mMap.addMarker(new MarkerOptions().position(newLoc).title(arg0.toString()));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(newLoc));
-            }
-        });
+
     }
-}
+        protected synchronized void buildGoogleApiClient()
+        {
+            client=new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
+            client.connect();
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+          lastLoaction=location;
+          if(currentLocationMarker!= null)
+          {
+              currentLocationMarker.remove();
+          }
+        }
+
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            locationRequest=new LocationRequest();
+            locationRequest.setInterval(1000);
+            locationRequest.setFastestInterval(1000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+            LocationServices.FusedLocationApi.requestLocationUpdates(client,locationRequest,this);
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
+        }
+
+        @Override
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+        }
+    }
